@@ -139,8 +139,6 @@ else
   echo "DSTM zm miner is already up-to-date"
 fi
 
-
-echo
 echo
 
 echo "Checking Z-ENEMY miner"
@@ -204,13 +202,13 @@ fi
 echo
 echo
 
-echo "Checking xmr-stak 2.4.4"
+echo "Checking xmr_stak 2.4.4"
 if ! grep -q "2.4.4" ${NVOC_MINERS}/xmr_stak/2.4.4/version
 then
-  echo "Extracting xmr-stak"
+  echo "Extracting xmr_stak"
   mkdir -p ${NVOC_MINERS}/xmr_stak/2.4.4/
-  stop-if-needed "[x]mr-stak"
-  tar -xvJf ${NVOC_MINERS}/xmr_stakxmr-stak-2.4.4.tar.xz -C ${NVOC_MINERS}/xmr_stak/2.4.4/ --strip 1
+  stop-if-needed "[x]mr_stak_miner"
+  tar -xvJf ${NVOC_MINERS}/xmr_stak/xmr_stak-2.4.4.tar.xz -C ${NVOC_MINERS}/xmr_stak/2.4.4/ --strip 1
   chmod a+x ${NVOC_MINERS}/xmr_stak/2.4.4/xmr_stak_miner
   if [[ -L "${NVOC_MINERS}/xmr_stak/recommended" && -d "${NVOC_MINERS}/xmr_stak/recommended" ]]
   then
@@ -228,7 +226,7 @@ then
   ln -s "${NVOC_MINERS}/xmr_stak/2.4.4" "${NVOC_MINERS}/xmr_stak/latest"
   restart-if-needed
 else
-  echo "xmr-stak is already up-to-date"
+  echo "xmr_stak is already up-to-date"
 fi
 
 
@@ -322,13 +320,28 @@ fi
 echo
 
 echo "Checking alexis ccminer"
-if ! grep -q "1.0" ${NVOC_MINERS}/ASccminer/version
+ASccminer_ver="1.0"
+if ! grep -q "1.0" ${NVOC_MINERS}/ASccminer/${ASccminer_ver}/version
 then
   echo "Extracting ASccminer"
-  mkdir -p ${NVOC_MINERS}/ASccminer/
+  mkdir -p ${NVOC_MINERS}/ASccminer/${ASccminer_ver}/
   stop-if-needed "[A]Sccminer"
-  tar -xvJf ${NVOC_MINERS}/ASccminer/ASccminer.tar.xz -C ${NVOC_MINERS}/ASccminer/ --strip 1
-  chmod a+x ${NVOC_MINERS}/ASccminer/ccminer
+  tar -xvJf ${NVOC_MINERS}/ASccminer/ASccminer.tar.xz -C ${NVOC_MINERS}/ASccminer/${ASccminer_ver}/ --strip 1
+  chmod a+x ${NVOC_MINERS}/ASccminer/${ASccminer_ver}/ccminer
+  if [[ -L "${NVOC_MINERS}/ASccminer/recommended" && -d "${NVOC_MINERS}/ASccminer/recommended" ]]
+  then
+    rm ${NVOC_MINERS}/ASccminer/recommended
+  else
+    rm -rf ${NVOC_MINERS}/ASccminer/recommended
+  fi
+  ln -s "${NVOC_MINERS}/ASccminer/${ASccminer_ver}" "${NVOC_MINERS}/ASccminer/recommended"
+  if [[ -L "${NVOC_MINERS}/ASccminer/latest" && -d "${NVOC_MINERS}/ASccminer/latest" ]]
+  then
+    rm ${NVOC_MINERS}/ASccminer/latest
+  else
+    rm -rf ${NVOC_MINERS}/ASccminer/latest
+  fi
+  ln -s "${NVOC_MINERS}/ASccminer/${ASccminer_ver}" "${NVOC_MINERS}/ASccminer/latest"
   restart-if-needed
 else
   echo "ASccminer is already up-to-date"
@@ -337,19 +350,33 @@ fi
 echo
 
 echo "Checking Krnlx ccminer"
-if ! grep -q "skunk-krnlx" ${NVOC_MINERS}/KXccminer/version
+KXccminer_ver="0.1"
+if ! grep -q "skunk-krnlx" ${NVOC_MINERS}/KXccminer/${KXccminer_ver}/version
 then
   echo "Extracting KXccminer"
-  mkdir -p ${NVOC_MINERS}/KXccminer/
+  mkdir -p ${NVOC_MINERS}/KXccminer/${KXccminer_ver}/
   stop-if-needed "[K]Xccminer"
-  tar -xvJf ${NVOC_MINERS}/KXccminer/KXccminer.tar.xz -C ${NVOC_MINERS}/KXccminer/ --strip 1
-  chmod a+x ${NVOC_MINERS}/KXccminer/ccminer
+  tar -xvJf ${NVOC_MINERS}/KXccminer/KXccminer.tar.xz -C ${NVOC_MINERS}/KXccminer/${KXccminer_ver}/ --strip 1
+  chmod a+x ${NVOC_MINERS}/KXccminer/${KXccminer_ver}/ccminer
+  if [[ -L "${NVOC_MINERS}/KXccminer/recommended" && -d "${NVOC_MINERS}/KXccminer/recommended" ]]
+  then
+    rm ${NVOC_MINERS}/KXccminer/recommended
+  else
+    rm -rf ${NVOC_MINERS}/KXccminer/recommended
+  fi
+  ln -s "${NVOC_MINERS}/KXccminer/${KXccminer_ver}" "${NVOC_MINERS}/KXccminer/recommended"
+  if [[ -L "${NVOC_MINERS}/KXccminer/latest" && -d "${NVOC_MINERS}/KXccminer/latest" ]]
+  then
+    rm ${NVOC_MINERS}/KXccminer/latest
+  else
+    rm -rf ${NVOC_MINERS}/KXccminer/latest
+  fi
+  ln -s "${NVOC_MINERS}/KXccminer/${KXccminer_ver}" "${NVOC_MINERS}/KXccminer/latest"
   restart-if-needed
 else
   echo "KXccminer is already up-to-date"
 fi
 
-echo
 echo
 
 echo "Checking tpruvot ccminer"
@@ -410,7 +437,65 @@ else
   echo "Use TPccminer_VERSION latest or recommended or 2.3 in 1bash"
 fi
 
-echo
+TPccminer_ver="2.3"
+if ! grep -q "${TPccminer_ver}" ${NVOC_MINERS}/TPccminer/${TPccminer_ver}/version
+then
+  echo "Extracting tpruvot ccminer and making changes for CUDA-9.2"
+  mkdir -p ${NVOC_MINERS}/TPccminer/${TPccminer_ver}/
+  tar -xvJf ${NVOC_MINERS}/TPccminer/TPccminer-2.3.tar.xz -C ${NVOC_MINERS}/TPccminer/${TPccminer_ver}/ --strip 1
+  chmod a+x  ${NVOC_MINERS}/TPccminer/${TPccminer_ver}/ccminer
+  stop-if-needed "[T]Pccminer"
+  echo "tpruvot ccminer for CUDA-9.2 updated"
+  echo "Use latest or recommended or ${TPccminer_ver} for TPccminer_VERSION in 1bash"
+  if [[ -L "${NVOC_MINERS}/TPccminer/latest" && -d "${NVOC_MINERS}/TPccminer/latest" ]]
+  then
+    rm ${NVOC_MINERS}/TPccminer/latest
+  else
+    rm -rf ${NVOC_MINERS}/TPccminer/latest
+  fi
+  ln -s "${NVOC_MINERS}/TPccminer/${TPccminer_ver}" "${NVOC_MINERS}/TPccminer/recommended"
+  if [[ $CUDA_VER == "9.2" ]]
+  then
+    if [[ -L "${NVOC_MINERS}/TPccminer/recommended" && -d "${NVOC_MINERS}/TPccminer/recommended" ]]
+    then
+      rm ${NVOC_MINERS}/TPccminer/recommended
+    else
+      rm -rf ${NVOC_MINERS}/TPccminer/recommended
+    fi
+    ln -s "${NVOC_MINERS}/TPccminer/${TPccminer_ver}" "${NVOC_MINERS}/TPccminer/latest"
+  fi
+  restart-if-needed
+else
+  echo "tpruvot ccminer for CUDA-9.2 is already up-to-date"
+  echo "Use TPccminer_VERSION latest or recommended or ${TPccminer_ver} in 1bash"
+fi
+
+TPccminer_ver="2.2.5"
+if ! grep -q "${TPccminer_ver}" ${NVOC_MINERS}/TPccminer/${TPccminer_ver}/version
+then
+  echo "Extracting tpruvot ccminer ${TPccminer_ver} and making changes for CUDA-8"
+  mkdir -p ${NVOC_MINERS}/TPccminer/${TPccminer_ver}/
+  tar -xvJf ${NVOC_MINERS}/TPccminer/TPccminer.tar.xz -C ${NVOC_MINERS}/TPccminer/${TPccminer_ver}/ --strip 1
+  chmod a+x  ${NVOC_MINERS}/TPccminer/${TPccminer_ver}/ccminer
+  stop-if-needed "[T]Pccminer"
+  echo "tpruvot ccminer for CUDA-8 updated"
+  echo "Use ${TPccminer_ver} or recommended for TPccminer_VERSION in 1bash"
+  if [[ $CUDA_VER == "8" ]]
+  then
+    if [[ -L "${NVOC_MINERS}/TPccminer/recommended" && -d "${NVOC_MINERS}/TPccminer/recommended" ]]
+    then
+      rm ${NVOC_MINERS}/TPccminer/recommended
+    else
+      rm -rf ${NVOC_MINERS}/TPccminer/recommended
+    fi
+    ln -s "${NVOC_MINERS}/TPccminer/${TPccminer_ver}" "${NVOC_MINERS}/TPccminer/recommended"
+  fi
+  restart-if-needed
+else
+  echo "tpruvot ccminer for CUDA-8 is already up-to-date"
+  echo "Use TPccminer_VERSION 2.2.5 or recommended in 1bash"
+fi
+
 echo
 
 echo "Checking Klaust ccminer"
@@ -472,7 +557,6 @@ else
 fi
 
 echo
-echo
 
 echo "Checking Vertminer v1.0-stable.2 Release"
 if ! grep -q "1.0.2" ${NVOC_MINERS}/vertminer/version
@@ -507,7 +591,6 @@ else
   echo "nanashi-ccminer is already up-to-date"
 fi
 
-echo
 echo
 
 echo "Checking Ethminer"
@@ -569,7 +652,6 @@ else
 fi
 
 echo
-echo
 
 echo "Checking KTccminer-cryptonight"
 if ! grep -q "2.06" ${NVOC_MINERS}/KTccminer-cryptonight/2.06/version
@@ -629,7 +711,6 @@ else
   echo "Use KTccminer-cryptonight_VERSION latest or recommended or 3.05 in 1bash"
 fi
 
-echo
 echo
 
 echo "Checking Equihash Bminer 9.1.0"
@@ -891,19 +972,19 @@ function compile-SUPRminer {
   restart-if-needed
 }
 
-function compile-xmr-stak {
-  echo "Compiling xmr-stak"
+function compile-xmr_stak {
+  echo "Compiling xmr_stak"
   echo " This could take a while ..."
-  get-sources xmr-stak
-  mkdir ${NVOC_MINERS}/xmr-stak/src/build
-  cd ${NVOC_MINERS}/xmr-stak/src/build
+  get-sources xmr_stak
+  mkdir ${NVOC_MINERS}/xmr_stak/src/build
+  cd ${NVOC_MINERS}/xmr_stak/src/build
   cmake ..
   make install
-  stop-if-needed "[x]mr-stak"
-  cp ${NVOC_MINERS}/xmr-stak/src/build/bin/xmr-stak ${NVOC_MINERS}/xmr-stak/src/build/bin/*.so ${NVOC_MINERS}/xmr-stak/xmr-stak_miner
+  stop-if-needed "[x]mr_stak_miner"
+  cp ${NVOC_MINERS}/xmr_stak/src/build/bin/xmr-stak ${NVOC_MINERS}/xmr_stak/src/build/bin/*.so ${NVOC_MINERS}/xmr_stak/xmr_stak_miner
   cd ${NVOC_MINERS}
   echo
-  echo "Finished compiling xmr-stak"
+  echo "Finished compiling xmr_stak"
   restart-if-needed
 }
 
@@ -971,7 +1052,7 @@ echo "9 - ANXccminer"
 echo "C - cpuminer"
 echo "R - MSFTccminer (RVN)"
 echo "U - SUPRminer"
-echo "X - xmr-stak"
+echo "X - xmr_stak"
 echo
 read -p "Do your Choice: [A]LL [1] [2] [3] [4] [5] [6] [7] [8] [9] [C] [R] [U] [X] [E]xit: " -a array
 for choice in "${array[@]}"; do
@@ -1010,7 +1091,7 @@ for choice in "${array[@]}"; do
       compile-SUPRminer
       echo
       echo
-      compile-xmr-stak
+      compile-xmr_stak
       echo
       echo
       compile-cpuminer
@@ -1052,7 +1133,7 @@ for choice in "${array[@]}"; do
       compile-SUPRminer
       ;;
     [X]* ) echo -e "$choice"
-      compile-xmr-stak
+      compile-xmr_stak
       ;;
     [Ee]* ) echo "exited by user"; break;;
     * ) echo "Are you kidding me???";;
