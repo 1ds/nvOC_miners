@@ -653,62 +653,62 @@ fi
 
 echo
 
-echo "Checking KTccminer-cryptonight"
-if ! grep -q "2.06" ${NVOC_MINERS}/KTccminer-cryptonight/2.06/version
+echo "Checking KTccminer_cryptonight"
+if ! grep -q "2.06" ${NVOC_MINERS}/KTccminer_cryptonight/2.06/version
 then
-  echo "Extracting KTccminer-cryptonight 2.06 and making changes for CUDA-8"
-  mkdir -p ${NVOC_MINERS}/KTccminer-cryptonight/2.06/
-  tar -xvJf ${NVOC_MINERS}/KTccminer-cryptonight/KTccminer-cryptonight.tar.xz -C ${NVOC_MINERS}/KTccminer-cryptonight/2.06/ --strip 1
-  chmod a+x  ${NVOC_MINERS}/KTccminer-cryptonight/2.06/ccminer
-  stop-if-needed "[K]Tccminer-cryptonight"
-  echo "KTccminer-cryptonight for CUDA-8 updated"
-  echo "Use 2.06 or recommended for KTccminer-cryptonight_VERSION in 1bash"
+  echo "Extracting KTccminer_cryptonight 2.06 and making changes for CUDA-8"
+  mkdir -p ${NVOC_MINERS}/KTccminer_cryptonight/2.06/
+  tar -xvJf ${NVOC_MINERS}/KTccminer_cryptonight/KTccminer_cryptonight.tar.xz -C ${NVOC_MINERS}/KTccminer_cryptonight/2.06/ --strip 1
+  chmod a+x  ${NVOC_MINERS}/KTccminer_cryptonight/2.06/ccminer
+  stop-if-needed "[K]Tccminer_cryptonight"
+  echo "KTccminer_cryptonight for CUDA-8 updated"
+  echo "Use 2.06 or recommended for KTccminer_cryptonight_VERSION in 1bash"
   if [[ $CUDA_VER == "8" ]]
   then
-    if [[ -L "${NVOC_MINERS}/KTccminer-cryptonight/recommended" && -d "${NVOC_MINERS}/KTccminer-cryptonight/recommended" ]]
+    if [[ -L "${NVOC_MINERS}/KTccminer_cryptonight/recommended" && -d "${NVOC_MINERS}/KTccminer_cryptonight/recommended" ]]
     then
-      rm ${NVOC_MINERS}/KTccminer-cryptonight/recommended
+      rm ${NVOC_MINERS}/KTccminer_cryptonight/recommended
     else
-      rm -rf ${NVOC_MINERS}/KTccminer-cryptonight/recommended
+      rm -rf ${NVOC_MINERS}/KTccminer_cryptonight/recommended
     fi
-    ln -s "${NVOC_MINERS}/KTccminer-cryptonight/2.06" "${NVOC_MINERS}/KTccminer-cryptonight/recommended"
+    ln -s "${NVOC_MINERS}/KTccminer_cryptonight/2.06" "${NVOC_MINERS}/KTccminer_cryptonight/recommended"
   fi
   restart-if-needed
 else
-  echo "KTccminer-cryptonight for CUDA-8 is already up-to-date"
-  echo "Use KTccminer-cryptonight_VERSION 2.06 or recommended in 1bash"
+  echo "KTccminer_cryptonight for CUDA-8 is already up-to-date"
+  echo "Use KTccminer_cryptonight_VERSION 2.06 or recommended in 1bash"
 fi
 
-if ! grep -q "3.05" ${NVOC_MINERS}/KTccminer-cryptonight/3.05/version
+if ! grep -q "3.05" ${NVOC_MINERS}/KTccminer_cryptonight/3.05/version
 then
-  echo "Extracting KTccminer-cryptonight and making changes for CUDA-9.2"
-  mkdir -p ${NVOC_MINERS}/KTccminer-cryptonight/3.05/
-  tar -xvJf ${NVOC_MINERS}/KTccminer-cryptonight/KTccminer-cryptonight-3.05.tar.xz -C ${NVOC_MINERS}/KTccminer-cryptonight/3.05/ --strip 1
-  chmod a+x  ${NVOC_MINERS}/KTccminer-cryptonight/3.05/ccminer
-  stop-if-needed "[K]Tccminer-cryptonight"
-  echo "KTccminer-cryptonight for CUDA-9.2 updated"
-  echo "Use latest or recommended or 3.05 for KTccminer-cryptonight_VERSION in 1bash"
-  if [[ -L "${NVOC_MINERS}/KTccminer-cryptonight/latest" && -d "${NVOC_MINERS}/KTccminer-cryptonight/latest" ]]
+  echo "Extracting KTccminer_cryptonight and making changes for CUDA-9.2"
+  mkdir -p ${NVOC_MINERS}/KTccminer_cryptonight/3.05/
+  tar -xvJf ${NVOC_MINERS}/KTccminer_cryptonight/KTccminer_cryptonight-3.05.tar.xz -C ${NVOC_MINERS}/KTccminer_cryptonight/3.05/ --strip 1
+  chmod a+x  ${NVOC_MINERS}/KTccminer_cryptonight/3.05/ccminer
+  stop-if-needed "[K]Tccminer_cryptonight"
+  echo "KTccminer_cryptonight for CUDA-9.2 updated"
+  echo "Use latest or recommended or 3.05 for KTccminer_cryptonight_VERSION in 1bash"
+  if [[ -L "${NVOC_MINERS}/KTccminer_cryptonight/latest" && -d "${NVOC_MINERS}/KTccminer_cryptonight/latest" ]]
   then
-    rm ${NVOC_MINERS}/KTccminer-cryptonight/latest
+    rm ${NVOC_MINERS}/KTccminer_cryptonight/latest
   else
-    rm -rf ${NVOC_MINERS}/KTccminer-cryptonight/latest
+    rm -rf ${NVOC_MINERS}/KTccminer_cryptonight/latest
   fi
-  ln -s "${NVOC_MINERS}/KTccminer-cryptonight/3.05" "${NVOC_MINERS}/KTccminer-cryptonight/latest"
+  ln -s "${NVOC_MINERS}/KTccminer_cryptonight/3.05" "${NVOC_MINERS}/KTccminer_cryptonight/latest"
   if [[ $CUDA_VER == "9.2" ]]
   then
-    if [[ -L "${NVOC_MINERS}/KTccminer-cryptonight/recommended" && -d "${NVOC_MINERS}/KTccminer-cryptonight/recommended" ]]
+    if [[ -L "${NVOC_MINERS}/KTccminer_cryptonight/recommended" && -d "${NVOC_MINERS}/KTccminer_cryptonight/recommended" ]]
     then
-      rm ${NVOC_MINERS}/KTccminer-cryptonight/recommended
+      rm ${NVOC_MINERS}/KTccminer_cryptonight/recommended
     else
-      rm -rf ${NVOC_MINERS}/KTccminer-cryptonight/recommended
+      rm -rf ${NVOC_MINERS}/KTccminer_cryptonight/recommended
     fi
-    ln -s "${NVOC_MINERS}/KTccminer-cryptonight/3.05" "${NVOC_MINERS}/KTccminer-cryptonight/recommended"
+    ln -s "${NVOC_MINERS}/KTccminer_cryptonight/3.05" "${NVOC_MINERS}/KTccminer_cryptonight/recommended"
   fi
   restart-if-needed
 else
-  echo "KTccminer-cryptonight for CUDA-9.2 is already up-to-date"
-  echo "Use KTccminer-cryptonight_VERSION latest or recommended or 3.05 in 1bash"
+  echo "KTccminer_cryptonight for CUDA-9.2 is already up-to-date"
+  echo "Use KTccminer_cryptonight_VERSION latest or recommended or 3.05 in 1bash"
 fi
 
 echo
@@ -828,16 +828,16 @@ function compile-KTccminer {
   restart-if-needed
 }
 
-function compile-KTccminer-cryptonight {
+function compile-KTccminer_cryptonight {
   echo "Compiling KlausT ccminer cryptonight"
   echo " This could take a while ..."
-  get-sources KTccminer-cryptonight
-  cd ${NVOC_MINERS}/KTccminer-cryptonight/src
-  bash ${NVOC_MINERS}/KTccminer-cryptonight/src/autogen.sh
-  bash ${NVOC_MINERS}/KTccminer-cryptonight/src/configure "CFLAGS=-O3" "CXXFLAGS=-O3" --with-cuda=/usr/local/cuda-8.0
+  get-sources KTccminer_cryptonight
+  cd ${NVOC_MINERS}/KTccminer_cryptonight/src
+  bash ${NVOC_MINERS}/KTccminer_cryptonight/src/autogen.sh
+  bash ${NVOC_MINERS}/KTccminer_cryptonight/src/configure "CFLAGS=-O3" "CXXFLAGS=-O3" --with-cuda=/usr/local/cuda-8.0
   make -j4
-  stop-if-needed "[K]Tccminer-cryptonight"
-  cp ${NVOC_MINERS}/KTccminer-cryptonight/src/ccminer ${NVOC_MINERS}/KTccminer-cryptonight/ccminer
+  stop-if-needed "[K]Tccminer_cryptonight"
+  cp ${NVOC_MINERS}/KTccminer_cryptonight/src/ccminer ${NVOC_MINERS}/KTccminer_cryptonight/ccminer
   cd ${NVOC_MINERS}
   echo
   echo "Finished compiling KlausT ccminer cryptonight"
@@ -1042,7 +1042,7 @@ IFS=', '
 echo "Select miners to compile (multiple comma separated values: 1,6,7)"
 echo "1 - ASccminer"
 echo "2 - KTccminer"
-echo "3 - KTccminer-cryptonight"
+echo "3 - KTccminer_cryptonight"
 echo "4 - KXccminer"
 echo "5 - NAccminer"
 echo "6 - SPccminer"
@@ -1064,7 +1064,7 @@ for choice in "${array[@]}"; do
       compile-KTccminer
       echo
       echo
-      compile-KTccminer-cryptonight
+      compile-KTccminer_cryptonight
       echo
       echo
       compile-KXccminer
@@ -1103,7 +1103,7 @@ for choice in "${array[@]}"; do
       compile-KTccminer
       ;;
     [3]* ) echo -e "$choice\n"
-      compile-KTccminer-cryptonight
+      compile-KTccminer_cryptonight
       ;;
     [4]* ) echo -e "$choice"
       compile-KXccminer

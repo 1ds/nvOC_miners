@@ -4,8 +4,8 @@
 [submodule "KTccminer/src"]
 	path = KTccminer/src
 	url = https://github.com/KlausT/ccminer.git
-[submodule "KTccminer-cryptonight/src"]
-	path = KTccminer-cryptonight/src
+[submodule "KTccminer_cryptonight/src"]
+	path = KTccminer_cryptonight/src
 	url = https://github.com/KlausT/ccminer-cryptonight
 [submodule "NAccminer/src"]
 	path = NAccminer/src
