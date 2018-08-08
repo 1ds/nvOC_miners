@@ -36,7 +36,8 @@ function get-sources {
   then
     chckt_cmd="git -C $1 submodule update --init --force --depth 1 $2"
   else
-    chckt_cmd="git -C $1/$2 checkout $3"
+    git -C $1 submodule update --init --force --depth 1 $2
+    chckt_cmd="git -C $1/$2 checkout --force $3"
   fi
 
   if ! ${chckt_cmd}
