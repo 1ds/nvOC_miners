@@ -224,24 +224,6 @@ fi
 
 echo
 
-echo "Checking xmr_stak 2.4.4"
-if ! grep -q "2.4.4" ${NVOC_MINERS}/xmr_stak/2.4.4/version
-then
-  echo "Extracting xmr_stak"
-  mkdir -p ${NVOC_MINERS}/xmr_stak/2.4.4/
-  stop-if-needed "[x]mr_stak_miner"
-  tar -xvJf ${NVOC_MINERS}/xmr_stak/xmr_stak-2.4.4.tar.xz -C ${NVOC_MINERS}/xmr_stak/2.4.4/ --strip 1
-  chmod a+x ${NVOC_MINERS}/xmr_stak/2.4.4/xmr_stak_miner
-  update-symlink ${NVOC_MINERS}/xmr_stak/2.4.4 recommended
-  update-symlink ${NVOC_MINERS}/xmr_stak/2.4.4 latest
-  restart-if-needed
-else
-  echo "xmr_stak is already up-to-date"
-fi
-
-
-echo
-
 echo "Checking Silent Miner 1.1.0"
 if ! grep -q "1.1.0" ${NVOC_MINERS}/SILENTminer/1.1.0/version
 then
@@ -446,52 +428,6 @@ then
   restart-if-needed
 else
   echo "nanashi-ccminer is already up-to-date"
-fi
-
-echo
-
-echo "Checking Ethminer"
-if ! grep -q "0.15.0" ${NVOC_MINERS}/ethminer/0.15.0/version
-then
-  echo "Extracting Ethminer and making changes for CUDA-9.2"
-  mkdir -p ${NVOC_MINERS}/ethminer/0.15.0/
-  tar -xvJf ${NVOC_MINERS}/ethminer/ethminer-0.15.0.tar.xz -C ${NVOC_MINERS}/ethminer/0.15.0/ --strip 1
-  chmod a+x  ${NVOC_MINERS}/ethminer/0.15.0/ethminer
-  stop-if-needed "[e]thminer"
-  echo "Ethminer for CUDA-9.2 updated"
-  echo "Use latest or recommended or 0.15.0 for ethminer_VERSION in 1bash"
-  update-symlink ${NVOC_MINERS}/ethminer/0.15.0 latest
-  if [[ $CUDA_VER == "cuda-9.2" ]]
-  then
-    update-symlink ${NVOC_MINERS}/ethminer/0.15.0 recommended
-  fi
-  restart-if-needed
-else
-  echo "Ethminer for CUDA-9.2 is already up-to-date"
-  echo "Use ethminer_VERSION latest or recommended or 0.15.0 in 1bash"
-fi
-
-echo
-
-echo "Checking KTccminer_cryptonight"
-if ! grep -q "3.05" ${NVOC_MINERS}/KTccminer_cryptonight/3.05/version
-then
-  echo "Extracting KTccminer_cryptonight and making changes for CUDA-9.2"
-  mkdir -p ${NVOC_MINERS}/KTccminer_cryptonight/3.05/
-  tar -xvJf ${NVOC_MINERS}/KTccminer_cryptonight/KTccminer_cryptonight-3.05.tar.xz -C ${NVOC_MINERS}/KTccminer_cryptonight/3.05/ --strip 1
-  chmod a+x  ${NVOC_MINERS}/KTccminer_cryptonight/3.05/ccminer
-  stop-if-needed "[K]Tccminer_cryptonight"
-  echo "KTccminer_cryptonight for CUDA-9.2 updated"
-  echo "Use latest or recommended or 3.05 for KTccminer_cryptonight_VERSION in 1bash"
-  update-symlink ${NVOC_MINERS}/KTccminer_cryptonight/3.05 latest
-  if [[ $CUDA_VER == "cuda-9.2" ]]
-  then
-    update-symlink ${NVOC_MINERS}/KTccminer_cryptonight/3.05 latest
-  fi
-  restart-if-needed
-else
-  echo "KTccminer_cryptonight for CUDA-9.2 is already up-to-date"
-  echo "Use KTccminer_cryptonight_VERSION latest or recommended or 3.05 in 1bash"
 fi
 
 echo
@@ -739,22 +675,6 @@ function compile-SUPRminer {
   restart-if-needed
 }
 
-function compile-xmr_stak {
-  echo "Compiling xmr_stak"
-  echo " This could take a while ..."
-  get-sources ${NVOC_MINERS}/xmr_stak src
-  mkdir ${NVOC_MINERS}/xmr_stak/src/build
-  cd ${NVOC_MINERS}/xmr_stak/src/build
-  cmake ..
-  make install
-  stop-if-needed "[x]mr_stak_miner"
-  cp ${NVOC_MINERS}/xmr_stak/src/build/bin/xmr-stak ${NVOC_MINERS}/xmr_stak/src/build/bin/*.so ${NVOC_MINERS}/xmr_stak/xmr_stak_miner
-  cd ${NVOC_MINERS}
-  echo
-  echo "Finished compiling xmr_stak"
-  restart-if-needed
-}
-
 function compile-cpuminer {
   echo "Compiling cpuminer"
   echo " This could take a while ..."
@@ -809,7 +729,6 @@ IFS=', '
 echo "Select miners to compile (multiple comma separated values: 1,6,7)"
 echo "1 - ASccminer"
 echo "2 - KTccminer"
-echo "3 - KTccminer_cryptonight"
 echo "4 - KXccminer"
 echo "5 - NAccminer"
 echo "6 - SPccminer"
@@ -819,7 +738,6 @@ echo "9 - ANXccminer"
 echo "C - cpuminer"
 echo "R - MSFTccminer (RVN)"
 echo "U - SUPRminer"
-echo "X - xmr_stak"
 echo
 read -p "Do your Choice: [A]LL [1] [2] [3] [4] [5] [6] [7] [8] [9] [C] [R] [U] [X] [E]xit: " -a array
 for choice in "${array[@]}"; do
@@ -834,9 +752,6 @@ for choice in "${array[@]}"; do
       echo
       echo
       compile-KTccminer
-      echo
-      echo
-      compile-KTccminer_cryptonight
       echo
       echo
       compile-KXccminer
@@ -863,9 +778,6 @@ for choice in "${array[@]}"; do
       compile-SUPRminer
       echo
       echo
-      compile-xmr_stak
-      echo
-      echo
       compile-cpuminer
       ;;
     [1]* ) echo -e "$choice"
@@ -873,9 +785,6 @@ for choice in "${array[@]}"; do
       ;;
     [2]* ) echo -e "$choice"
       compile-KTccminer
-      ;;
-    [3]* ) echo -e "$choice\n"
-      compile-KTccminer_cryptonight
       ;;
     [4]* ) echo -e "$choice"
       compile-KXccminer
@@ -903,9 +812,6 @@ for choice in "${array[@]}"; do
       ;;
     [U]* ) echo -e "$choice"
       compile-SUPRminer
-      ;;
-    [X]* ) echo -e "$choice"
-      compile-xmr_stak
       ;;
     [Ee]* ) echo "exited by user"; break;;
     * ) echo -e "$choice"
