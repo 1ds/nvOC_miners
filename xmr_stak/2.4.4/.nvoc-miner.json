@@ -1,7 +1,7 @@
 {
   "friendlyname": "XMR-Stak Cryptonight",
   "version": "2.4.4",
-  "hcd": "xmr-stak --currency monero7 --noCPU --noAMD -o \"${!xpool}\":\"${!xport}\" -u \"${!xaddr}\"\"${!xwallet}\"\"${!xwork}\" -p \"$MINER_PWD\" -i 0",
+  "hcd": "xmr-stak.nvoc.sh --currency monero7 --noCPU --noAMD -o \"${!xpool}\":\"${!xport}\" -u \"${!xaddr}\"\"${!xwallet}\"\"${!xwork}\" -p \"$MINER_PWD\" -i 0",
   "devlist_format": 0,
 
   "minerinfo":
@@ -18,7 +18,7 @@
     "latest": "true",
     "recommanded": "cuda-9.2",
     "tarball": "xmr_stak-2.4.4.tar.xz",
-    "executable": "xmr-stak"
+    "executable": "xmr-stak xmr-stak.nvoc.sh"
   },
 
   "compile":
