@@ -50,6 +50,15 @@ function get-sources {
   fi
 }
 
+function update-symlink {
+  if [[ -L "${NVOC_MINERS}/$1/$3" && -d "${NVOC_MINERS}/$1/$3" ]]
+  then
+    rm "${NVOC_MINERS}/$1/$3"
+  else
+    rm -rf "${NVOC_MINERS}/$1/$3"
+  fi
+  ln -s "${NVOC_MINERS}/$1/$2" "${NVOC_MINERS}/$1/$3"
+}
 
 
 echo "Checking EWBF Equihash miner "
@@ -62,20 +71,8 @@ then
   chmod a+x ${NVOC_MINERS}/ewbf/3_4/miner
   chmod a+x ${NVOC_MINERS}/ewbf/3_3/miner
   stop-if-needed "[e]wbf"
-  if [[ -L "${NVOC_MINERS}/ewbf/latest" && -d "${NVOC_MINERS}/ewbf/latest" ]]
-  then
-    rm ${NVOC_MINERS}/ewbf/latest
-  else
-    rm -rf ${NVOC_MINERS}/ewbf/latest
-  fi
-  ln -s ${NVOC_MINERS}/ewbf/3_4 "${NVOC_MINERS}/ewbf/latest"
-  if [[ -L "${NVOC_MINERS}/ewbf/recommended" && -d "${NVOC_MINERS}/ewbf/recommended" ]]
-  then
-    rm ${NVOC_MINERS}/ewbf/recommended
-  else
-    rm -rf ${NVOC_MINERS}/ewbf/recommended
-  fi
-  ln -s ${NVOC_MINERS}/ewbf/3_4 "${NVOC_MINERS}/ewbf/recommended"
+  update-symlink ewbf 3_4 latest
+  update-symlink ewbf 3_4 recommended
   restart-if-needed
 else
   echo "EWBF Equihash miner is already up-to-date"
@@ -91,20 +88,8 @@ then
   stop-if-needed "[z]_ewbf"
   tar -xvJf ${NVOC_MINERS}/z_ewbf/z_ewbf_v0.5.tar.xz -C ${NVOC_MINERS}/z_ewbf/0.5/ --strip 1
   chmod a+x ${NVOC_MINERS}/z_ewbf/0.5/miner
-  if [[ -L "${NVOC_MINERS}/z_ewbf/recommended" && -d "${NVOC_MINERS}/z_ewbf/recommended" ]]
-  then
-    rm ${NVOC_MINERS}/z_ewbf/recommended
-  else
-    rm -rf ${NVOC_MINERS}/z_ewbf/recommended
-  fi
-  ln -s "${NVOC_MINERS}/z_ewbf/0.5/" "${NVOC_MINERS}/z_ewbf/recommended"
-  if [[ -L "${NVOC_MINERS}/z_ewbf/latest" && -d "${NVOC_MINERS}/z_ewbf/latest" ]]
-  then
-    rm ${NVOC_MINERS}/z_ewbf/latest
-  else
-    rm -rf ${NVOC_MINERS}/z_ewbf/latest
-  fi
-  ln -s "${NVOC_MINERS}/z_ewbf/0.5/" "${NVOC_MINERS}/z_ewbf/latest"
+  update-symlink z_ewbf 0.5 latest
+  update-symlink z_ewbf 0.5 recommended
   restart-if-needed
 else
   echo "EWBF ZHASH miner is already up-to-date"
@@ -120,20 +105,8 @@ then
   stop-if-needed "[z]m_miner"
   tar -xvJf ${NVOC_MINERS}/dstm/DSTM_0.6.1.tar.xz -C ${NVOC_MINERS}/dstm/0.6.1/ --strip 1
   chmod a+x ${NVOC_MINERS}/dstm/0.6.1/zm_miner
-  if [[ -L "${NVOC_MINERS}/dstm/recommended" && -d "${NVOC_MINERS}/dstm/recommended" ]]
-  then
-    rm ${NVOC_MINERS}/dstm/recommended
-  else
-    rm -rf ${NVOC_MINERS}/dstm/recommended
-  fi
-  ln -s "${NVOC_MINERS}/dstm/0.6.1/" "${NVOC_MINERS}/dstm/recommended"
-  if [[ -L "${NVOC_MINERS}/dstm/latest" && -d "${NVOC_MINERS}/dstm/latest" ]]
-  then
-    rm ${NVOC_MINERS}/dstm/latest
-  else
-    rm -rf ${NVOC_MINERS}/dstm/latest
-  fi
-  ln -s "${NVOC_MINERS}/dstm/0.6.1/" "${NVOC_MINERS}/dstm/latest"
+  update-symlink dstm 0.6.1 latest
+  update-symlink dstm 0.6.1 recommended
   restart-if-needed
 else
   echo "DSTM zm miner is already up-to-date"
@@ -152,14 +125,7 @@ then
   echo "Z-ENEMY miner for CUDA-8 updated"
   echo "Use 1.10 or recommended for ZENEMYminer_VERSION in bash"
   if [[ $CUDA_VER == "8" ]]
-  then
-    if [[ -L "${NVOC_MINERS}/ZENEMYminer/recommended" && -d "${NVOC_MINERS}/ZENEMYminer/recommended" ]]
-    then
-      rm ${NVOC_MINERS}/ZENEMYminer/recommended
-    else
-      rm -rf ${NVOC_MINERS}/ZENEMYminer/recommended
-    fi
-    ln -s "${NVOC_MINERS}/ZENEMYminer/1.10" "${NVOC_MINERS}/ZENEMYminer/recommended"
+    update-symlink ZENEMYminer 1.10 recommended
   fi
   restart-if-needed
 else
@@ -176,22 +142,10 @@ then
   stop-if-needed "[Z]ENEMYminer"
   echo "Z-ENEMY miner for CUDA-9.2 updated"
   echo "Use latest or recommended or 1.14 for ZENEMYminer_VERSION in bash"
-  if [[ -L "${NVOC_MINERS}/ZENEMYminer/latest" && -d "${NVOC_MINERS}/ZENEMYminer/latest" ]]
-  then
-    rm ${NVOC_MINERS}/ZENEMYminer/latest
-  else
-    rm -rf ${NVOC_MINERS}/ZENEMYminer/latest
-  fi
-  ln -s "${NVOC_MINERS}/ZENEMYminer/1.14" "${NVOC_MINERS}/ZENEMYminer/latest"
+  update-symlink ZENEMYminer 1.14 latest
   if [[ $CUDA_VER == "9.2" ]]
   then
-    if [[ -L "${NVOC_MINERS}/ZENEMYminer/recommended" && -d "${NVOC_MINERS}/ZENEMYminer/recommended" ]]
-    then
-      rm ${NVOC_MINERS}/ZENEMYminer/recommended
-    else
-      rm -rf ${NVOC_MINERS}/ZENEMYminer/recommended
-    fi
-    ln -s "${NVOC_MINERS}/ZENEMYminer/1.14" "${NVOC_MINERS}/ZENEMYminer/recommended"
+    update-symlink ZENEMYminer 1.14 recommended
   fi
   restart-if-needed
 else
@@ -210,20 +164,8 @@ then
   stop-if-needed "[x]mr_stak_miner"
   tar -xvJf ${NVOC_MINERS}/xmr_stak/xmr_stak-2.4.4.tar.xz -C ${NVOC_MINERS}/xmr_stak/2.4.4/ --strip 1
   chmod a+x ${NVOC_MINERS}/xmr_stak/2.4.4/xmr_stak_miner
-  if [[ -L "${NVOC_MINERS}/xmr_stak/recommended" && -d "${NVOC_MINERS}/xmr_stak/recommended" ]]
-  then
-    rm ${NVOC_MINERS}/xmr_stak/recommended
-  else
-    rm -rf ${NVOC_MINERS}/xmr_stak/recommended
-  fi
-  ln -s "${NVOC_MINERS}/xmr_stak/2.4.4" "${NVOC_MINERS}/xmr_stak/recommended"
-  if [[ -L "${NVOC_MINERS}/xmr_stak/latest" && -d "${NVOC_MINERS}/xmr_stak/latest" ]]
-  then
-    rm ${NVOC_MINERS}/xmr_stak/latest
-  else
-    rm -rf ${NVOC_MINERS}/xmr_stak/latest
-  fi
-  ln -s "${NVOC_MINERS}/xmr_stak/2.4.4" "${NVOC_MINERS}/xmr_stak/latest"
+  update-symlink xmr_stak 2.4.4 recommended
+  update-symlink xmr_stak 2.4.4 latest
   restart-if-needed
 else
   echo "xmr_stak is already up-to-date"
@@ -240,20 +182,8 @@ then
   stop-if-needed "[S]ILENTminer"
   tar -xvJf ${NVOC_MINERS}/SILENTminer/SILENTminer.v1.1.0.tar.xz -C ${NVOC_MINERS}/SILENTminer/1.1.0/ --strip 1
   chmod a+x ${NVOC_MINERS}/SILENTminer/1.1.0/ccminer
-  if [[ -L "${NVOC_MINERS}/SILENTminer/recommended" && -d "${NVOC_MINERS}/SILENTminer/recommended" ]]
-  then
-    rm ${NVOC_MINERS}/SILENTminer/recommended
-  else
-    rm -rf ${NVOC_MINERS}/SILENTminer/recommended
-  fi
-  ln -s "${NVOC_MINERS}/SILENTminer/1.1.0" "${NVOC_MINERS}/SILENTminer/recommended"
-  if [[ -L "${NVOC_MINERS}/SILENTminer/latest" && -d "${NVOC_MINERS}/SILENTminer/latest" ]]
-  then
-    rm ${NVOC_MINERS}/SILENTminer/latest
-  else
-    rm -rf ${NVOC_MINERS}/SILENTminer/latest
-  fi
-  ln -s "${NVOC_MINERS}/SILENTminer/1.1.0" "${NVOC_MINERS}/SILENTminer/latest"
+  update-symlink SILENTminer 1.1.0 latest
+  update-symlink SILENTminer 1.1.0 recommended
   restart-if-needed
 else
   echo "Silent Miner is already up-to-date"
@@ -269,20 +199,8 @@ then
   stop-if-needed "[e]thdcrminer64"
   tar -xvJf ${NVOC_MINERS}/claymore/Claymore-v11.9.tar.xz -C ${NVOC_MINERS}/claymore/11.9/ --strip 1
   chmod a+x ${NVOC_MINERS}/claymore/11.9//ethdcrminer64
-  if [[ -L "${NVOC_MINERS}/claymore/recommended" && -d "${NVOC_MINERS}/claymore/recommended" ]]
-  then
-    rm ${NVOC_MINERS}/claymore/recommended
-  else
-    rm -rf ${NVOC_MINERS}/claymore/recommended
-  fi
-  ln -s "${NVOC_MINERS}/claymore/11.9/" "${NVOC_MINERS}/claymore/recommended"
-  if [[ -L "${NVOC_MINERS}/claymore/latest" && -d "${NVOC_MINERS}/claymore/latest" ]]
-  then
-    rm ${NVOC_MINERS}/claymore/latest
-  else
-    rm -rf ${NVOC_MINERS}/claymore/latest
-  fi
-  ln -s "${NVOC_MINERS}/claymore/11.9/" "${NVOC_MINERS}/claymore/latest"
+  update-symlink claymore 11.9 latest
+  update-symlink claymore 11.9 recommended
   restart-if-needed
 else
   echo "Claymore is already up-to-date"
@@ -298,20 +216,8 @@ then
   stop-if-needed "[S]Pccminer"
   tar -xvJf ${NVOC_MINERS}/SPccminer/SPccminer.tar.xz -C ${NVOC_MINERS}/SPccminer/1.8.2/ --strip 1
   chmod a+x ${NVOC_MINERS}/SPccminer/1.8.2/ccminer
-  if [[ -L "${NVOC_MINERS}/SPccminer/recommended" && -d "${NVOC_MINERS}/SPccminer/recommended" ]]
-  then
-    rm ${NVOC_MINERS}/SPccminer/recommended
-  else
-    rm -rf ${NVOC_MINERS}/SPccminer/recommended
-  fi
-  ln -s "${NVOC_MINERS}/SPccminer/1.8.2" "${NVOC_MINERS}/SPccminer/recommended"
-  if [[ -L "${NVOC_MINERS}/SPccminer/latest" && -d "${NVOC_MINERS}/SPccminer/latest" ]]
-  then
-    rm ${NVOC_MINERS}/SPccminer/latest
-  else
-    rm -rf ${NVOC_MINERS}/SPccminer/latest
-  fi
-  ln -s "${NVOC_MINERS}/SPccminer/1.8.2" "${NVOC_MINERS}/SPccminer/latest"
+  update-symlink SPccmienr 1.8.2 latest
+  update-symlink SPccmienr 1.8.2 recommended
   restart-if-needed
 else
   echo "SPccminer is already up-to-date"
@@ -328,20 +234,8 @@ then
   stop-if-needed "[A]Sccminer"
   tar -xvJf ${NVOC_MINERS}/ASccminer/ASccminer.tar.xz -C ${NVOC_MINERS}/ASccminer/${ASccminer_ver}/ --strip 1
   chmod a+x ${NVOC_MINERS}/ASccminer/${ASccminer_ver}/ccminer
-  if [[ -L "${NVOC_MINERS}/ASccminer/recommended" && -d "${NVOC_MINERS}/ASccminer/recommended" ]]
-  then
-    rm ${NVOC_MINERS}/ASccminer/recommended
-  else
-    rm -rf ${NVOC_MINERS}/ASccminer/recommended
-  fi
-  ln -s "${NVOC_MINERS}/ASccminer/${ASccminer_ver}" "${NVOC_MINERS}/ASccminer/recommended"
-  if [[ -L "${NVOC_MINERS}/ASccminer/latest" && -d "${NVOC_MINERS}/ASccminer/latest" ]]
-  then
-    rm ${NVOC_MINERS}/ASccminer/latest
-  else
-    rm -rf ${NVOC_MINERS}/ASccminer/latest
-  fi
-  ln -s "${NVOC_MINERS}/ASccminer/${ASccminer_ver}" "${NVOC_MINERS}/ASccminer/latest"
+  update-symlink ASccmienr 1.0 latest
+  update-symlink ASccmienr 1.0 recommended 
   restart-if-needed
 else
   echo "ASccminer is already up-to-date"
@@ -358,20 +252,8 @@ then
   stop-if-needed "[K]Xccminer"
   tar -xvJf ${NVOC_MINERS}/KXccminer/KXccminer.tar.xz -C ${NVOC_MINERS}/KXccminer/${KXccminer_ver}/ --strip 1
   chmod a+x ${NVOC_MINERS}/KXccminer/${KXccminer_ver}/ccminer
-  if [[ -L "${NVOC_MINERS}/KXccminer/recommended" && -d "${NVOC_MINERS}/KXccminer/recommended" ]]
-  then
-    rm ${NVOC_MINERS}/KXccminer/recommended
-  else
-    rm -rf ${NVOC_MINERS}/KXccminer/recommended
-  fi
-  ln -s "${NVOC_MINERS}/KXccminer/${KXccminer_ver}" "${NVOC_MINERS}/KXccminer/recommended"
-  if [[ -L "${NVOC_MINERS}/KXccminer/latest" && -d "${NVOC_MINERS}/KXccminer/latest" ]]
-  then
-    rm ${NVOC_MINERS}/KXccminer/latest
-  else
-    rm -rf ${NVOC_MINERS}/KXccminer/latest
-  fi
-  ln -s "${NVOC_MINERS}/KXccminer/${KXccminer_ver}" "${NVOC_MINERS}/KXccminer/latest"
+  update-symlink KXccmienr 0.1 latest
+  update-symlink KXccmienr 0.1 recommended 
   restart-if-needed
 else
   echo "KXccminer is already up-to-date"
@@ -380,63 +262,6 @@ fi
 echo
 
 echo "Checking tpruvot ccminer"
-if ! grep -q "2.2.5" ${NVOC_MINERS}/TPccminer/2.2.5/version
-then
-  echo "Extracting tpruvot ccminer 2.2.5 and making changes for CUDA-8"
-  mkdir -p ${NVOC_MINERS}/TPccminer/2.2.5/
-  tar -xvJf ${NVOC_MINERS}/TPccminer/TPccminer.tar.xz -C ${NVOC_MINERS}/TPccminer/2.2.5/ --strip 1
-  chmod a+x  ${NVOC_MINERS}/TPccminer/2.2.5/ccminer
-  stop-if-needed "[T]Pccminer"
-  echo "tpruvot ccminer for CUDA-8 updated"
-  echo "Use 2.2.5 or recommended for TPccminer_VERSION in 1bash"
-  if [[ $CUDA_VER == "8" ]]
-  then
-    if [[ -L "${NVOC_MINERS}/TPccminer/recommended" && -d "${NVOC_MINERS}/TPccminer/recommended" ]]
-    then
-      rm ${NVOC_MINERS}/TPccminer/recommended
-    else
-      rm -rf ${NVOC_MINERS}/TPccminer/recommended
-    fi
-    ln -s "${NVOC_MINERS}/TPccminer/2.2.5" "${NVOC_MINERS}/TPccminer/recommended"
-  fi
-  restart-if-needed
-else
-  echo "tpruvot ccminer for CUDA-8 is already up-to-date"
-  echo "Use TPccminer_VERSION 2.2.5 or recommended in 1bash"
-fi
-
-if ! grep -q "2.3" ${NVOC_MINERS}/TPccminer/2.3/version
-then
-  echo "Extracting tpruvot ccminer and making changes for CUDA-9.2"
-  mkdir -p ${NVOC_MINERS}/TPccminer/2.3/
-  tar -xvJf ${NVOC_MINERS}/TPccminer/TPccminer-2.3.tar.xz -C ${NVOC_MINERS}/TPccminer/2.3/ --strip 1
-  chmod a+x  ${NVOC_MINERS}/TPccminer/2.3/ccminer
-  stop-if-needed "[T]Pccminer"
-  echo "tpruvot ccminer for CUDA-9.2 updated"
-  echo "Use latest or recommended or 2.3 for TPccminer_VERSION in 1bash"
-  if [[ -L "${NVOC_MINERS}/TPccminer/latest" && -d "${NVOC_MINERS}/TPccminer/latest" ]]
-  then
-    rm ${NVOC_MINERS}/TPccminer/latest
-  else
-    rm -rf ${NVOC_MINERS}/TPccminer/latest
-  fi
-  ln -s "${NVOC_MINERS}/TPccminer/2.3" "${NVOC_MINERS}/TPccminer/latest"
-  if [[ $CUDA_VER == "9.2" ]]
-  then
-    if [[ -L "${NVOC_MINERS}/TPccminer/recommended" && -d "${NVOC_MINERS}/TPccminer/recommended" ]]
-    then
-      rm ${NVOC_MINERS}/TPccminer/recommended
-    else
-      rm -rf ${NVOC_MINERS}/TPccminer/recommended
-    fi
-    ln -s "${NVOC_MINERS}/TPccminer/2.3" "${NVOC_MINERS}/TPccminer/recommended"
-  fi
-  restart-if-needed
-else
-  echo "tpruvot ccminer for CUDA-9.2 is already up-to-date"
-  echo "Use TPccminer_VERSION latest or recommended or 2.3 in 1bash"
-fi
-
 TPccminer_ver="2.3"
 if ! grep -q "${TPccminer_ver}" ${NVOC_MINERS}/TPccminer/${TPccminer_ver}/version
 then
@@ -447,22 +272,10 @@ then
   stop-if-needed "[T]Pccminer"
   echo "tpruvot ccminer for CUDA-9.2 updated"
   echo "Use latest or recommended or ${TPccminer_ver} for TPccminer_VERSION in 1bash"
-  if [[ -L "${NVOC_MINERS}/TPccminer/latest" && -d "${NVOC_MINERS}/TPccminer/latest" ]]
-  then
-    rm ${NVOC_MINERS}/TPccminer/latest
-  else
-    rm -rf ${NVOC_MINERS}/TPccminer/latest
-  fi
-  ln -s "${NVOC_MINERS}/TPccminer/${TPccminer_ver}" "${NVOC_MINERS}/TPccminer/recommended"
+  update-symlink TPccmienr 2.3 latest  
   if [[ $CUDA_VER == "9.2" ]]
   then
-    if [[ -L "${NVOC_MINERS}/TPccminer/recommended" && -d "${NVOC_MINERS}/TPccminer/recommended" ]]
-    then
-      rm ${NVOC_MINERS}/TPccminer/recommended
-    else
-      rm -rf ${NVOC_MINERS}/TPccminer/recommended
-    fi
-    ln -s "${NVOC_MINERS}/TPccminer/${TPccminer_ver}" "${NVOC_MINERS}/TPccminer/latest"
+    update-symlink TPccmienr 2.3 recommended 
   fi
   restart-if-needed
 else
@@ -482,13 +295,7 @@ then
   echo "Use ${TPccminer_ver} or recommended for TPccminer_VERSION in 1bash"
   if [[ $CUDA_VER == "8" ]]
   then
-    if [[ -L "${NVOC_MINERS}/TPccminer/recommended" && -d "${NVOC_MINERS}/TPccminer/recommended" ]]
-    then
-      rm ${NVOC_MINERS}/TPccminer/recommended
-    else
-      rm -rf ${NVOC_MINERS}/TPccminer/recommended
-    fi
-    ln -s "${NVOC_MINERS}/TPccminer/${TPccminer_ver}" "${NVOC_MINERS}/TPccminer/recommended"
+    update-symlink TPccmienr 2.2.5 recommended
   fi
   restart-if-needed
 else
@@ -510,13 +317,7 @@ then
   echo "Use 8.20 or recommended for KTccminer_VERSION in 1bash"
   if [[ $CUDA_VER == "8" ]]
   then
-    if [[ -L "${NVOC_MINERS}/KTccminer/recommended" && -d "${NVOC_MINERS}/KTccminer/recommended" ]]
-    then
-      rm ${NVOC_MINERS}/KTccminer/recommended
-    else
-      rm -rf ${NVOC_MINERS}/KTccminer/recommended
-    fi
-    ln -s "${NVOC_MINERS}/KTccminer/8.20" "${NVOC_MINERS}/KTccminer/recommended"
+    update-symlink KTccmienr 8.20 recommended    
   fi
   restart-if-needed
 else
@@ -533,22 +334,10 @@ then
   stop-if-needed "[K]Tccminer"
   echo "Klaust ccminer for CUDA-9.2 updated"
   echo "Use latest or recommended or 8.22 for KTccminer_VERSION in 1bash"
-  if [[ -L "${NVOC_MINERS}/KTccminer/latest" && -d "${NVOC_MINERS}/KTccminer/latest" ]]
-  then
-    rm ${NVOC_MINERS}/KTccminer/latest
-  else
-    rm -rf ${NVOC_MINERS}/KTccminer/latest
-  fi
-  ln -s "${NVOC_MINERS}/KTccminer/8.22" "${NVOC_MINERS}/KTccminer/latest"
+  update-symlink KTccmienr 8.22 latest
   if [[ $CUDA_VER == "9.2" ]]
   then
-    if [[ -L "${NVOC_MINERS}/KTccminer/recommended" && -d "${NVOC_MINERS}/KTccminer/recommended" ]]
-    then
-      rm ${NVOC_MINERS}/KTccminer/recommended
-    else
-      rm -rf ${NVOC_MINERS}/KTccminer/recommended
-    fi
-    ln -s "${NVOC_MINERS}/KTccminer/8.22" "${NVOC_MINERS}/KTccminer/recommended"
+    update-symlink KTccmienr 8.22 recommended    
   fi
   restart-if-needed
 else
@@ -600,18 +389,12 @@ then
   mkdir -p ${NVOC_MINERS}/ethminer/0.14.0/
   tar -xvJf ${NVOC_MINERS}/ethminer/ethminer-0.14.0-Linux.tar.xz -C ${NVOC_MINERS}/ethminer/0.14.0/ --strip 1
   chmod a+x  ${NVOC_MINERS}/ethminer/0.14.0/ccminer
-  stop-if-needed "[Z]ENEMYminer"
+  stop-if-needed "[e]thminer"
   echo "Ethminer for CUDA-8 updated"
   echo "Use 0.14.0 or recommended for ethminer_VERSION in 1bash"
   if [[ $CUDA_VER == "8" ]]
   then
-    if [[ -L "${NVOC_MINERS}/ethminer/recommended" && -d "${NVOC_MINERS}/ethminer/recommended" ]]
-    then
-      rm ${NVOC_MINERS}/ethminer/recommended
-    else
-      rm -rf ${NVOC_MINERS}/ethminer/recommended
-    fi
-    ln -s "${NVOC_MINERS}/ethminer/0.14.0" "${NVOC_MINERS}/ethminer/recommended"
+    update-symlink ethminer 0.14.0 recommended    
   fi
   restart-if-needed
 else
@@ -628,22 +411,10 @@ then
   stop-if-needed "[e]thminer"
   echo "Ethminer for CUDA-9.2 updated"
   echo "Use latest or recommended or 0.15.0 for ethminer_VERSION in 1bash"
-  if [[ -L "${NVOC_MINERS}/ethminer/latest" && -d "${NVOC_MINERS}/ethminer/latest" ]]
-  then
-    rm ${NVOC_MINERS}/ethminer/latest
-  else
-    rm -rf ${NVOC_MINERS}/ethminer/latest
-  fi
-  ln -s "${NVOC_MINERS}/ethminer/0.15.0" "${NVOC_MINERS}/ethminer/latest"
+  update-symlink ethminer 0.15.0 latest
   if [[ $CUDA_VER == "9.2" ]]
   then
-    if [[ -L "${NVOC_MINERS}/ethminer/recommended" && -d "${NVOC_MINERS}/ethminer/recommended" ]]
-    then
-      rm ${NVOC_MINERS}/ethminer/recommended
-    else
-      rm -rf ${NVOC_MINERS}/ethminer/recommended
-    fi
-    ln -s "${NVOC_MINERS}/ethminer/0.15.0" "${NVOC_MINERS}/ethminer/recommended"
+    update-symlink ethminer 0.15.0 recommended
   fi
   restart-if-needed
 else
@@ -665,13 +436,7 @@ then
   echo "Use 2.06 or recommended for KTccminer_cryptonight_VERSION in 1bash"
   if [[ $CUDA_VER == "8" ]]
   then
-    if [[ -L "${NVOC_MINERS}/KTccminer_cryptonight/recommended" && -d "${NVOC_MINERS}/KTccminer_cryptonight/recommended" ]]
-    then
-      rm ${NVOC_MINERS}/KTccminer_cryptonight/recommended
-    else
-      rm -rf ${NVOC_MINERS}/KTccminer_cryptonight/recommended
-    fi
-    ln -s "${NVOC_MINERS}/KTccminer_cryptonight/2.06" "${NVOC_MINERS}/KTccminer_cryptonight/recommended"
+    update-symlink KTccminer_cryptonight 2.06 recommended    
   fi
   restart-if-needed
 else
@@ -688,22 +453,10 @@ then
   stop-if-needed "[K]Tccminer_cryptonight"
   echo "KTccminer_cryptonight for CUDA-9.2 updated"
   echo "Use latest or recommended or 3.05 for KTccminer_cryptonight_VERSION in 1bash"
-  if [[ -L "${NVOC_MINERS}/KTccminer_cryptonight/latest" && -d "${NVOC_MINERS}/KTccminer_cryptonight/latest" ]]
-  then
-    rm ${NVOC_MINERS}/KTccminer_cryptonight/latest
-  else
-    rm -rf ${NVOC_MINERS}/KTccminer_cryptonight/latest
-  fi
-  ln -s "${NVOC_MINERS}/KTccminer_cryptonight/3.05" "${NVOC_MINERS}/KTccminer_cryptonight/latest"
+  update-symlink KTccminer_cryptonight 3.05 latest
   if [[ $CUDA_VER == "9.2" ]]
   then
-    if [[ -L "${NVOC_MINERS}/KTccminer_cryptonight/recommended" && -d "${NVOC_MINERS}/KTccminer_cryptonight/recommended" ]]
-    then
-      rm ${NVOC_MINERS}/KTccminer_cryptonight/recommended
-    else
-      rm -rf ${NVOC_MINERS}/KTccminer_cryptonight/recommended
-    fi
-    ln -s "${NVOC_MINERS}/KTccminer_cryptonight/3.05" "${NVOC_MINERS}/KTccminer_cryptonight/recommended"
+    update-symlink KTccminer_cryptonight 3.05 latest
   fi
   restart-if-needed
 else
