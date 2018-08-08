@@ -4,9 +4,6 @@
 [submodule "KTccminer/src"]
 	path = KTccminer/src
 	url = https://github.com/KlausT/ccminer.git
-[submodule "KTccminer_cryptonight/src"]
-	path = KTccminer_cryptonight/src
-	url = https://github.com/KlausT/ccminer-cryptonight
 [submodule "NAccminer/src"]
 	path = NAccminer/src
 	url = https://github.com/Nanashi-Meiyo-Meijin/ccminer
@@ -28,12 +25,15 @@
 [submodule "SPccminer/src"]
 	path = SPccminer/src
 	url = https://github.com/sp-hash/ccminer
-[submodule "xmr_stak/src"]
-	path = xmr_stak/src
-	url = https://github.com/fireice-uk/xmr-stak
 [submodule "SUPRminer/src"]
 	path = SUPRminer/src
 	url = https://github.com/ocminer/suprminer
 [submodule "cpuOPT/src"]
 	path = cpuOPT/src
 	url = https://github.com/JayDDee/cpuminer-opt
+[submodule "KTccminer_cryptonight/src"]
+	path = KTccminer_cryptonight/src
+	url = https://github.com/KlausT/ccminer-cryptonight
+[submodule "xmr_stak/src"]
+	path = xmr_stak/src
+	url = https://github.com/fireice-uk/xmr-stak

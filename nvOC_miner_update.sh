@@ -6,10 +6,10 @@ echo "Will check and restart miner if needed"
 echo
 export NVOC_MINERS="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-CUDA_VER="8"
+CUDA_VER="cuda-8.0"
 if  nvcc --version | grep -v grep | grep -q "9.2"
 then
-  CUDA_VER="9.2"
+  CUDA_VER="cuda-9.2"
 fi
 
 function stop-if-needed {
@@ -32,16 +32,16 @@ function restart-if-needed {
 }
 
 function get-sources {
-  SU_CMD="git -C ${NVOC_MINERS}/$1 submodule update --init --force --depth 1 src"
+  SU_CMD="git -C $1 submodule update --init --force --depth 1 $2"
   if ! ${SU_CMD}
   then
     echo "Update from shallow clone failed, fetching old commits..."
-    git -C "${NVOC_MINERS}/$1/src" fetch --unshallow
+    git -C "$1/$2" fetch --unshallow
     if ! ${SU_CMD}
     then
       echo "Update from default branch failed, fetching other branches..."
-      git -C "${NVOC_MINERS}/$1/src" remote set-branches origin '*'
-      git -C "${NVOC_MINERS}/$1/src" fetch
+      git -C "$1/$2" remote set-branches origin '*'
+      git -C "$1/$2" fetch
       if ! ${SU_CMD}
       then
         echo "Unable to update submodule, can't find target commit."
@@ -51,15 +51,84 @@ function get-sources {
 }
 
 function update-symlink {
-  if [[ -L "${NVOC_MINERS}/$1/$3" && -d "${NVOC_MINERS}/$1/$3" ]]
+  if [[ -L "$1/$2" && -d "$1/$2" ]]
   then
-    rm "${NVOC_MINERS}/$1/$3"
+    rm "$1/$2"
   else
-    rm -rf "${NVOC_MINERS}/$1/$3"
+    rm -rf "$1/$2"
   fi
-  ln -s "${NVOC_MINERS}/$1/$2" "${NVOC_MINERS}/$1/$3"
+  ln -s "$1" "$1/$2"
 }
 
+function pluggable-installer {
+  pm="$1"
+  pm_path=$(dirname "$1")
+  pm_output="${pm_path}/nvoc-miner.json"
+
+  if [[ -f $pm && -f $pm_output && $(md5sum $pm | cut -d ' ' -f1) == $(md5sum $pm_output | cut -d ' ' -f1) ]]
+  then
+    echo "$(jq -r .friendlyname ${pm_output}) $(jq -r .version ${pm_output}) for $(jq -r .install.recommanded ${pm_output}) is already installed"
+    return
+  fi
+
+  echo "Extracting $(jq -r .friendlyname ${pm}) $(jq -r .version ${pm}) for $(jq -r .install.recommanded ${pm})"
+  mkdir -p "${pm_path}/"
+  tar -xvJf "${pm_path}/$(jq -r install.tarball ${pm})" -C "${pm_path}" --strip 1
+  chmod a+x  "${pm_path}/$(jq -r install.executable ${pm})"
+  stop-if-needed "${pm_path}"
+  if [[ $CUDA_VER == $(jq -r install.recommanded ${pm}) ]]
+  then
+    update-symlink "${pm_path}" recommended    
+  fi
+  if [[ $(jq -r install.latest ${pm}) == true ]]
+  then
+    update-symlink "${pm_path}" latest    
+  fi
+  cp -f "$pm" "$pm_output"
+  restart-if-needed
+
+  echo "$(jq -r .friendlyname ${pm}) for $(jq -r install.recommanded ${pm}) updated"
+}
+
+function pluggable-compiler {
+  pm="$1"
+  pm_path=$(dirname "$1")
+  pm_src="$(jq -r .compile.src_path ${pm})"
+  
+  if [[ $pm_src == false ]]
+  then
+    echo "${pm}: nothing to compile for $(jq -r .friendlyname ${pm})"
+    return
+  fi
+
+  echo "Compiling $(jq -r .friendlyname ${pm})"
+  echo " this will take a while ..."
+  get-sources "${pm_path}" "${pm_src}"
+
+  if [[ ! -d $pm_src ]]
+    echo "${pm}: can't compile $(jq -r .friendlyname ${pm}), no sources available in '${pm_src}'"
+    return
+  fi
+
+  pushd "${pm_path}/${pm_src}"
+
+  eval $(jq -r .compile.command ${pm})
+
+  # TODO: detect compilation failure
+
+  stop-if-needed "${pm_path}"
+  cp $(jq -r .compile.output ${pm}) "${pm_path}/"
+  echo
+  echo "Finished compiling $(jq -r .friendlyname ${pm})"
+  restart-if-needed
+
+  popd
+}
+
+for pm in $(find "${NVOC_MINERS}"/*/ -name .nvoc-miner.json -print)
+do
+  pluggable-installer "$pm"
+done
 
 echo "Checking EWBF Equihash miner "
 if ! grep -q "0.3.4b" ${NVOC_MINERS}/ewbf/3_4/version
@@ -71,8 +140,8 @@ then
   chmod a+x ${NVOC_MINERS}/ewbf/3_4/miner
   chmod a+x ${NVOC_MINERS}/ewbf/3_3/miner
   stop-if-needed "[e]wbf"
-  update-symlink ewbf 3_4 latest
-  update-symlink ewbf 3_4 recommended
+  update-symlink ${NVOC_MINERS}/ewbf/3_4 latest
+  update-symlink ${NVOC_MINERS}/ewbf/3_4 recommended
   restart-if-needed
 else
   echo "EWBF Equihash miner is already up-to-date"
@@ -88,8 +157,8 @@ then
   stop-if-needed "[z]_ewbf"
   tar -xvJf ${NVOC_MINERS}/z_ewbf/z_ewbf_v0.5.tar.xz -C ${NVOC_MINERS}/z_ewbf/0.5/ --strip 1
   chmod a+x ${NVOC_MINERS}/z_ewbf/0.5/miner
-  update-symlink z_ewbf 0.5 latest
-  update-symlink z_ewbf 0.5 recommended
+  update-symlink ${NVOC_MINERS}/z_ewbf/0.5 latest
+  update-symlink ${NVOC_MINERS}/z_ewbf/0.5 recommended
   restart-if-needed
 else
   echo "EWBF ZHASH miner is already up-to-date"
@@ -105,8 +174,8 @@ then
   stop-if-needed "[z]m_miner"
   tar -xvJf ${NVOC_MINERS}/dstm/DSTM_0.6.1.tar.xz -C ${NVOC_MINERS}/dstm/0.6.1/ --strip 1
   chmod a+x ${NVOC_MINERS}/dstm/0.6.1/zm_miner
-  update-symlink dstm 0.6.1 latest
-  update-symlink dstm 0.6.1 recommended
+  update-symlink ${NVOC_MINERS}/dstm/0.6.1 latest
+  update-symlink ${NVOC_MINERS}/dstm/0.6.1 recommended
   restart-if-needed
 else
   echo "DSTM zm miner is already up-to-date"
@@ -124,8 +193,8 @@ then
   stop-if-needed "[Z]ENEMYminer"
   echo "Z-ENEMY miner for CUDA-8 updated"
   echo "Use 1.10 or recommended for ZENEMYminer_VERSION in bash"
-  if [[ $CUDA_VER == "8" ]]
-    update-symlink ZENEMYminer 1.10 recommended
+  if [[ $CUDA_VER == "cuda-8.0" ]]
+    update-symlink ${NVOC_MINERS}/ZENEMYminer/1.10 recommended
   fi
   restart-if-needed
 else
@@ -143,9 +212,9 @@ then
   echo "Z-ENEMY miner for CUDA-9.2 updated"
   echo "Use latest or recommended or 1.14 for ZENEMYminer_VERSION in bash"
   update-symlink ZENEMYminer 1.14 latest
-  if [[ $CUDA_VER == "9.2" ]]
+  if [[ $CUDA_VER == "cuda-9.2" ]]
   then
-    update-symlink ZENEMYminer 1.14 recommended
+    update-symlink ${NVOC_MINERS}/ZENEMYminer/1.14 recommended
   fi
   restart-if-needed
 else
@@ -153,7 +222,6 @@ else
   echo "Use ZENEMYminer_VERSION latest or recommended or 1.14 in bash"
 fi
 
-echo
 echo
 
 echo "Checking xmr_stak 2.4.4"
@@ -164,8 +232,8 @@ then
   stop-if-needed "[x]mr_stak_miner"
   tar -xvJf ${NVOC_MINERS}/xmr_stak/xmr_stak-2.4.4.tar.xz -C ${NVOC_MINERS}/xmr_stak/2.4.4/ --strip 1
   chmod a+x ${NVOC_MINERS}/xmr_stak/2.4.4/xmr_stak_miner
-  update-symlink xmr_stak 2.4.4 recommended
-  update-symlink xmr_stak 2.4.4 latest
+  update-symlink ${NVOC_MINERS}/xmr_stak/2.4.4 recommended
+  update-symlink ${NVOC_MINERS}/xmr_stak/2.4.4 latest
   restart-if-needed
 else
   echo "xmr_stak is already up-to-date"
@@ -182,8 +250,8 @@ then
   stop-if-needed "[S]ILENTminer"
   tar -xvJf ${NVOC_MINERS}/SILENTminer/SILENTminer.v1.1.0.tar.xz -C ${NVOC_MINERS}/SILENTminer/1.1.0/ --strip 1
   chmod a+x ${NVOC_MINERS}/SILENTminer/1.1.0/ccminer
-  update-symlink SILENTminer 1.1.0 latest
-  update-symlink SILENTminer 1.1.0 recommended
+  update-symlink ${NVOC_MINERS}/SILENTminer/1.1.0 latest
+  update-symlink ${NVOC_MINERS}/SILENTminer/1.1.0 recommended
   restart-if-needed
 else
   echo "Silent Miner is already up-to-date"
@@ -199,8 +267,8 @@ then
   stop-if-needed "[e]thdcrminer64"
   tar -xvJf ${NVOC_MINERS}/claymore/Claymore-v11.9.tar.xz -C ${NVOC_MINERS}/claymore/11.9/ --strip 1
   chmod a+x ${NVOC_MINERS}/claymore/11.9//ethdcrminer64
-  update-symlink claymore 11.9 latest
-  update-symlink claymore 11.9 recommended
+  update-symlink ${NVOC_MINERS}/claymore/11.9 latest
+  update-symlink ${NVOC_MINERS}/claymore/11.9 recommended
   restart-if-needed
 else
   echo "Claymore is already up-to-date"
@@ -216,8 +284,8 @@ then
   stop-if-needed "[S]Pccminer"
   tar -xvJf ${NVOC_MINERS}/SPccminer/SPccminer.tar.xz -C ${NVOC_MINERS}/SPccminer/1.8.2/ --strip 1
   chmod a+x ${NVOC_MINERS}/SPccminer/1.8.2/ccminer
-  update-symlink SPccmienr 1.8.2 latest
-  update-symlink SPccmienr 1.8.2 recommended
+  update-symlink ${NVOC_MINERS}/SPccminer/1.8.2 latest
+  update-symlink ${NVOC_MINERS}/SPccminer/1.8.2 recommended
   restart-if-needed
 else
   echo "SPccminer is already up-to-date"
@@ -234,8 +302,8 @@ then
   stop-if-needed "[A]Sccminer"
   tar -xvJf ${NVOC_MINERS}/ASccminer/ASccminer.tar.xz -C ${NVOC_MINERS}/ASccminer/${ASccminer_ver}/ --strip 1
   chmod a+x ${NVOC_MINERS}/ASccminer/${ASccminer_ver}/ccminer
-  update-symlink ASccmienr 1.0 latest
-  update-symlink ASccmienr 1.0 recommended 
+  update-symlink ${NVOC_MINERS}/ASccminer/${ASccminer_ver} latest
+  update-symlink ${NVOC_MINERS}/ASccminer/${ASccminer_ver} recommended 
   restart-if-needed
 else
   echo "ASccminer is already up-to-date"
@@ -252,8 +320,8 @@ then
   stop-if-needed "[K]Xccminer"
   tar -xvJf ${NVOC_MINERS}/KXccminer/KXccminer.tar.xz -C ${NVOC_MINERS}/KXccminer/${KXccminer_ver}/ --strip 1
   chmod a+x ${NVOC_MINERS}/KXccminer/${KXccminer_ver}/ccminer
-  update-symlink KXccmienr 0.1 latest
-  update-symlink KXccmienr 0.1 recommended 
+  update-symlink ${NVOC_MINERS}/KXccminer/${KXccminer_ver} latest
+  update-symlink ${NVOC_MINERS}/KXccminer/${KXccminer_ver} recommended 
   restart-if-needed
 else
   echo "KXccminer is already up-to-date"
@@ -272,10 +340,10 @@ then
   stop-if-needed "[T]Pccminer"
   echo "tpruvot ccminer for CUDA-9.2 updated"
   echo "Use latest or recommended or ${TPccminer_ver} for TPccminer_VERSION in 1bash"
-  update-symlink TPccmienr 2.3 latest  
-  if [[ $CUDA_VER == "9.2" ]]
+  update-symlink ${NVOC_MINERS}/TPccminer/${TPccminer_ver} latest  
+  if [[ $CUDA_VER == "cuda-9.2" ]]
   then
-    update-symlink TPccmienr 2.3 recommended 
+    update-symlink ${NVOC_MINERS}/TPccminer/${TPccminer_ver} recommended 
   fi
   restart-if-needed
 else
@@ -293,9 +361,9 @@ then
   stop-if-needed "[T]Pccminer"
   echo "tpruvot ccminer for CUDA-8 updated"
   echo "Use ${TPccminer_ver} or recommended for TPccminer_VERSION in 1bash"
-  if [[ $CUDA_VER == "8" ]]
+  if [[ $CUDA_VER == "cuda-8.0" ]]
   then
-    update-symlink TPccmienr 2.2.5 recommended
+    update-symlink ${NVOC_MINERS}/TPccminer/${TPccminer_ver} recommended
   fi
   restart-if-needed
 else
@@ -315,9 +383,9 @@ then
   stop-if-needed "[K]Tccminer"
   echo "Klaust ccminer for CUDA-8 updated"
   echo "Use 8.20 or recommended for KTccminer_VERSION in 1bash"
-  if [[ $CUDA_VER == "8" ]]
+  if [[ $CUDA_VER == "cuda-8.0" ]]
   then
-    update-symlink KTccmienr 8.20 recommended    
+    update-symlink ${NVOC_MINERS}/KTccminer/8.20 recommended    
   fi
   restart-if-needed
 else
@@ -334,10 +402,10 @@ then
   stop-if-needed "[K]Tccminer"
   echo "Klaust ccminer for CUDA-9.2 updated"
   echo "Use latest or recommended or 8.22 for KTccminer_VERSION in 1bash"
-  update-symlink KTccmienr 8.22 latest
-  if [[ $CUDA_VER == "9.2" ]]
+  update-symlink ${NVOC_MINERS}/KTccminer/8.22 latest
+  if [[ $CUDA_VER == "cuda-9.2" ]]
   then
-    update-symlink KTccmienr 8.22 recommended    
+    update-symlink ${NVOC_MINERS}/KTccminer/8.22 recommended    
   fi
   restart-if-needed
 else
@@ -383,25 +451,6 @@ fi
 echo
 
 echo "Checking Ethminer"
-if ! grep -q "0.14.0" ${NVOC_MINERS}/ethminer/0.14.0/version
-then
-  echo "Extracting Ethminer 0.14.0 and making changes for CUDA-8"
-  mkdir -p ${NVOC_MINERS}/ethminer/0.14.0/
-  tar -xvJf ${NVOC_MINERS}/ethminer/ethminer-0.14.0-Linux.tar.xz -C ${NVOC_MINERS}/ethminer/0.14.0/ --strip 1
-  chmod a+x  ${NVOC_MINERS}/ethminer/0.14.0/ccminer
-  stop-if-needed "[e]thminer"
-  echo "Ethminer for CUDA-8 updated"
-  echo "Use 0.14.0 or recommended for ethminer_VERSION in 1bash"
-  if [[ $CUDA_VER == "8" ]]
-  then
-    update-symlink ethminer 0.14.0 recommended    
-  fi
-  restart-if-needed
-else
-  echo "Ethminer for CUDA-8 is already up-to-date"
-  echo "Use ethminer_VERSION 0.14.0 or recommended in 1bash"
-fi
-
 if ! grep -q "0.15.0" ${NVOC_MINERS}/ethminer/0.15.0/version
 then
   echo "Extracting Ethminer and making changes for CUDA-9.2"
@@ -411,10 +460,10 @@ then
   stop-if-needed "[e]thminer"
   echo "Ethminer for CUDA-9.2 updated"
   echo "Use latest or recommended or 0.15.0 for ethminer_VERSION in 1bash"
-  update-symlink ethminer 0.15.0 latest
-  if [[ $CUDA_VER == "9.2" ]]
+  update-symlink ${NVOC_MINERS}/ethminer/0.15.0 latest
+  if [[ $CUDA_VER == "cuda-9.2" ]]
   then
-    update-symlink ethminer 0.15.0 recommended
+    update-symlink ${NVOC_MINERS}/ethminer/0.15.0 recommended
   fi
   restart-if-needed
 else
@@ -425,25 +474,6 @@ fi
 echo
 
 echo "Checking KTccminer_cryptonight"
-if ! grep -q "2.06" ${NVOC_MINERS}/KTccminer_cryptonight/2.06/version
-then
-  echo "Extracting KTccminer_cryptonight 2.06 and making changes for CUDA-8"
-  mkdir -p ${NVOC_MINERS}/KTccminer_cryptonight/2.06/
-  tar -xvJf ${NVOC_MINERS}/KTccminer_cryptonight/KTccminer_cryptonight.tar.xz -C ${NVOC_MINERS}/KTccminer_cryptonight/2.06/ --strip 1
-  chmod a+x  ${NVOC_MINERS}/KTccminer_cryptonight/2.06/ccminer
-  stop-if-needed "[K]Tccminer_cryptonight"
-  echo "KTccminer_cryptonight for CUDA-8 updated"
-  echo "Use 2.06 or recommended for KTccminer_cryptonight_VERSION in 1bash"
-  if [[ $CUDA_VER == "8" ]]
-  then
-    update-symlink KTccminer_cryptonight 2.06 recommended    
-  fi
-  restart-if-needed
-else
-  echo "KTccminer_cryptonight for CUDA-8 is already up-to-date"
-  echo "Use KTccminer_cryptonight_VERSION 2.06 or recommended in 1bash"
-fi
-
 if ! grep -q "3.05" ${NVOC_MINERS}/KTccminer_cryptonight/3.05/version
 then
   echo "Extracting KTccminer_cryptonight and making changes for CUDA-9.2"
@@ -453,10 +483,10 @@ then
   stop-if-needed "[K]Tccminer_cryptonight"
   echo "KTccminer_cryptonight for CUDA-9.2 updated"
   echo "Use latest or recommended or 3.05 for KTccminer_cryptonight_VERSION in 1bash"
-  update-symlink KTccminer_cryptonight 3.05 latest
-  if [[ $CUDA_VER == "9.2" ]]
+  update-symlink ${NVOC_MINERS}/KTccminer_cryptonight/3.05 latest
+  if [[ $CUDA_VER == "cuda-9.2" ]]
   then
-    update-symlink KTccminer_cryptonight 3.05 latest
+    update-symlink ${NVOC_MINERS}/KTccminer_cryptonight/3.05 latest
   fi
   restart-if-needed
 else
@@ -549,7 +579,7 @@ sleep 2
 function compile-ASccminer {
   echo "Compiling alexis ccminer"
   echo "This could take a while ..."
-  get-sources ASccminer
+  get-sources ${NVOC_MINERS}/ASccminer src
   cd ${NVOC_MINERS}/ASccminer/src
   bash ${NVOC_MINERS}/ASccminer/src/autogen.sh
   bash ${NVOC_MINERS}/ASccminer/src/configure
@@ -564,7 +594,7 @@ function compile-ASccminer {
 function compile-KTccminer {
   echo "Compiling KlausT ccminer"
   echo " This could take a while ..."
-  get-sources KTccminer
+  get-sources ${NVOC_MINERS}/KTccminer src
   cd ${NVOC_MINERS}/KTccminer/src
   make distclean || echo clean
   rm -f Makefile.in
@@ -581,26 +611,10 @@ function compile-KTccminer {
   restart-if-needed
 }
 
-function compile-KTccminer_cryptonight {
-  echo "Compiling KlausT ccminer cryptonight"
-  echo " This could take a while ..."
-  get-sources KTccminer_cryptonight
-  cd ${NVOC_MINERS}/KTccminer_cryptonight/src
-  bash ${NVOC_MINERS}/KTccminer_cryptonight/src/autogen.sh
-  bash ${NVOC_MINERS}/KTccminer_cryptonight/src/configure "CFLAGS=-O3" "CXXFLAGS=-O3" --with-cuda=/usr/local/cuda-8.0
-  make -j4
-  stop-if-needed "[K]Tccminer_cryptonight"
-  cp ${NVOC_MINERS}/KTccminer_cryptonight/src/ccminer ${NVOC_MINERS}/KTccminer_cryptonight/ccminer
-  cd ${NVOC_MINERS}
-  echo
-  echo "Finished compiling KlausT ccminer cryptonight"
-  restart-if-needed
-}
-
 function compile-KXccminer {
   echo "Compiling krnlx ccminer"
   echo " This could take a while ..."
-  get-sources KXccminer
+  get-sources ${NVOC_MINERS}/KXccminer src
   cd ${NVOC_MINERS}/KXccminer/src
   bash ${NVOC_MINERS}/KXccminer/src/autogen.sh
   bash ${NVOC_MINERS}/KXccminer/src/configure
@@ -616,7 +630,7 @@ function compile-KXccminer {
 function compile-NAccminer {
   echo "Compiling Nanashi ccminer"
   echo " This could take a while ..."
-  get-sources NAccminer
+  get-sources ${NVOC_MINERS}/NAccminer src
   cd ${NVOC_MINERS}/NAccminer/src
   bash ${NVOC_MINERS}/NAccminer/src/autogen.sh
   bash ${NVOC_MINERS}/NAccminer/src/configure
@@ -632,7 +646,7 @@ function compile-NAccminer {
 function compile-SPccminer {
   echo "Compiling SPccminer"
   echo " This could take a while ..."
-  get-sources SPccminer
+  get-sources ${NVOC_MINERS}/SPccminer src
   cd ${NVOC_MINERS}/SPccminer/src
   bash ${NVOC_MINERS}/SPccminer/src/autogen.sh
   bash ${NVOC_MINERS}/SPccminer/src/configure
@@ -648,7 +662,7 @@ function compile-SPccminer {
 function compile-TPccminer {
   echo "Compiling tpruvot ccminer"
   echo " This could take a while ..."
-  get-sources TPccminer
+  get-sources ${NVOC_MINERS}/TPccminer src
   cd ${NVOC_MINERS}/TPccminer/src
   bash ${NVOC_MINERS}/TPccminer/src/autogen.sh
   bash ${NVOC_MINERS}/TPccminer/src/configure
@@ -664,7 +678,7 @@ function compile-TPccminer {
 function compile-vertminer {
   echo "Compiling Vertminer"
   echo " This could take a while ..."
-  get-sources vertminer
+  get-sources ${NVOC_MINERS}/vertminer src
   cd ${NVOC_MINERS}/vertminer/src
   bash ${NVOC_MINERS}/vertminer/src/autogen.sh
   bash ${NVOC_MINERS}/vertminer/src/configure
@@ -680,7 +694,7 @@ function compile-vertminer {
 function compile-ANXccminer {
   echo "Compiling anorganix ccminer"
   echo " This could take a while ..."
-  get-sources ANXccminer
+  get-sources ${NVOC_MINERS}/ANXccminer src
   cd ${NVOC_MINERS}/ANXccminer/src
   bash ${NVOC_MINERS}/ANXccminer/src/autogen.sh
   bash ${NVOC_MINERS}/ANXccminer/src/configure
@@ -696,7 +710,7 @@ function compile-ANXccminer {
 function compile-MSFTccminer {
   echo "Compiling MSFTccminer"
   echo " This could take a while ..."
-  get-sources MSFTccminer
+  get-sources ${NVOC_MINERS}/MSFTccminer src
   cd ${NVOC_MINERS}/MSFTccminer/src
   bash ${NVOC_MINERS}/MSFTccminer/src/autogen.sh
   bash ${NVOC_MINERS}/MSFTccminer/src/configure
@@ -712,7 +726,7 @@ function compile-MSFTccminer {
 function compile-SUPRminer {
   echo "Compiling SUPRminer"
   echo " This could take a while ..."
-  get-sources SUPRminer
+  get-sources ${NVOC_MINERS}/SUPRminer src
   cd ${NVOC_MINERS}/SUPRminer/src
   bash ${NVOC_MINERS}/SUPRminer/src/autogen.sh
   bash ${NVOC_MINERS}/SUPRminer/src/configure
@@ -728,7 +742,7 @@ function compile-SUPRminer {
 function compile-xmr_stak {
   echo "Compiling xmr_stak"
   echo " This could take a while ..."
-  get-sources xmr_stak
+  get-sources ${NVOC_MINERS}/xmr_stak src
   mkdir ${NVOC_MINERS}/xmr_stak/src/build
   cd ${NVOC_MINERS}/xmr_stak/src/build
   cmake ..
@@ -744,7 +758,7 @@ function compile-xmr_stak {
 function compile-cpuminer {
   echo "Compiling cpuminer"
   echo " This could take a while ..."
-  get-sources cpuOPT
+  get-sources ${NVOC_MINERS}/cpuOPT src
   cd ${NVOC_MINERS}/cpuOPT/src
   bash ${NVOC_MINERS}/cpuOPT/src/build.sh
   stop-if-needed "[c]puminer"
@@ -811,6 +825,11 @@ read -p "Do your Choice: [A]LL [1] [2] [3] [4] [5] [6] [7] [8] [9] [C] [R] [U] [
 for choice in "${array[@]}"; do
   case "$choice" in
     [Aa]* ) echo "ALL"
+      for pm in $(find "${NVOC_MINERS}"/*/ -name nvoc-miner.json -print)
+      do
+        pluggable-installer "$pm"
+        echo && echo
+      done
       compile-ASccminer
       echo
       echo
@@ -889,6 +908,14 @@ for choice in "${array[@]}"; do
       compile-xmr_stak
       ;;
     [Ee]* ) echo "exited by user"; break;;
-    * ) echo "Are you kidding me???";;
+    * ) echo -e "$choice"
+      pm=$(find "./$choice" -name nvoc-miner.json -print)
+      if [[ -f $pm ]]
+      then
+        pluggable-installer "$pm"
+      else
+        echo "Are you kidding me???"
+      fi
+      ;;
   esac
 done
