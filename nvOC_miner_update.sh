@@ -32,19 +32,25 @@ function restart-if-needed {
 }
 
 function get-sources {
-  SU_CMD="git -C $1 submodule update --init --force --depth 1 $2"
-  if ! ${SU_CMD}
+  if [[ $3 == "" ]]
   then
-    echo "Update from shallow clone failed, fetching old commits..."
+    chckt_cmd="git -C $1 submodule update --init --force --depth 1 $2"
+  else
+    chckt_cmd="git -C $1/$2 checkout $3"
+  fi
+
+  if ! ${chckt_cmd}
+  then
+    echo "Checkout from shallow clone failed, fetching old commits..."
     git -C "$1/$2" fetch --unshallow
-    if ! ${SU_CMD}
+    if ! ${chckt_cmd}
     then
-      echo "Update from default branch failed, fetching other branches..."
+      echo "Checkout from default branch failed, fetching other branches..."
       git -C "$1/$2" remote set-branches origin '*'
       git -C "$1/$2" fetch
-      if ! ${SU_CMD}
+      if ! ${chckt_cmd}
       then
-        echo "Unable to update submodule, can't find target commit."
+        echo "Unable to checkout submodule, can't find target commit."
       fi
     fi
   fi
@@ -90,22 +96,12 @@ function pluggable-installer {
   echo "$(jq -r .friendlyname ${pm}) for $(jq -r install.recommanded ${pm}) updated"
 }
 
-function pluggable-sources {
-  pm="$1"
-  pm_path=$(dirname "$1")
-  pm_src="$(jq -r .compile.src_path ${pm})"
-  pm_src_hash="$(jq -r .compile.src_commit_hash ${pm})"
-  pm_src_repo="$(jq -r .compile.src_repo ${pm})"
-
-  git -C "${pm_path}" submodule add ${pm_src_repo} "${pm_src}"
-  git -C "${pm_path}/${pm_src}" checkout $pm_src_hash
-}
-
 function pluggable-compiler {
   pm="$1"
   pm_path=$(dirname "$1")
   pm_src="$(jq -r .compile.src_path ${pm})"
-  
+  pm_src_hash="$(jq -r .compile.src_commit_hash ${pm})"
+
   if [[ $pm_src == false ]]
   then
     echo "${pm}: nothing to compile for $(jq -r .friendlyname ${pm})"
@@ -115,12 +111,10 @@ function pluggable-compiler {
   echo "Initializing sources submodule"
   if ! git submodule init "$1/$2"
   then
-    pluggable-sources "$pm"
+    git -C "${pm_path}" submodule add ${pm_src_repo} "${pm_src}"
   fi
-  
-  echo "Compiling $(jq -r .friendlyname ${pm})"
-  echo " this will take a while ..."
-  get-sources "${pm_path}" "${pm_src}"
+
+  get-sources "${pm_path}" "${pm_src}" $pm_src_hash
 
   if [[ ! -d $pm_src ]]
     echo "${pm}: can't compile $(jq -r .friendlyname ${pm}), no sources available in '${pm_src}'"
@@ -128,6 +122,9 @@ function pluggable-compiler {
   fi
 
   pushd "${pm_path}/${pm_src}"
+
+  echo "Compiling $(jq -r .friendlyname ${pm})"
+  echo " this will take a while ..."
 
   eval $(jq -r .compile.command ${pm})
 
