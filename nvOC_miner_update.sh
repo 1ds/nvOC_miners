@@ -90,6 +90,17 @@ function pluggable-installer {
   echo "$(jq -r .friendlyname ${pm}) for $(jq -r install.recommanded ${pm}) updated"
 }
 
+function pluggable-sources {
+  pm="$1"
+  pm_path=$(dirname "$1")
+  pm_src="$(jq -r .compile.src_path ${pm})"
+  pm_src_hash="$(jq -r .compile.src_commit_hash ${pm})"
+  pm_src_repo="$(jq -r .compile.src_repo ${pm})"
+
+  git -C "${pm_path}" submodule add ${pm_src_repo} "${pm_src}"
+  git -C "${pm_path}/${pm_src}" checkout $pm_src_hash
+}
+
 function pluggable-compiler {
   pm="$1"
   pm_path=$(dirname "$1")
@@ -101,6 +112,12 @@ function pluggable-compiler {
     return
   fi
 
+  echo "Initializing sources submodule"
+  if ! git submodule init "$1/$2"
+  then
+    pluggable-sources "$pm"
+  fi
+  
   echo "Compiling $(jq -r .friendlyname ${pm})"
   echo " this will take a while ..."
   get-sources "${pm_path}" "${pm_src}"

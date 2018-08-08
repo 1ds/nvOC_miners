@@ -24,6 +24,7 @@
   "compile":
   {
     "src_path": "../src",
+    "src_repo": "https://github.com/KlausT/ccminer-cryptonight",
     "src_commit_hash": "31865e0b846ad98e2ce99aeb9b28bb51d3be22db",
     "command": "bash autogen.sh && bash configure \"CFLAGS=-O3\" \"CXXFLAGS=-O3\" --with-cuda=/usr/local/cuda-8.0 && make -j4",
     "output": "ccminer"
