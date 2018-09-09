@@ -253,9 +253,11 @@ ucompiled8="_compiled_tarball_ver_8"
 ucompiled9="_compiled_tarball_ver_9"
 ucompiled="_compiled_tarball"
 
-if [[ -d ${NVOC_MINERS}/helpers ]]
+if [[ -d ${NVOC_MINERS}/helpers/miners ]]
 then
-  shipped_miners=$(find ${NVOC_MINERS}/helpers/miners/*/ -name .nvoc-miner.json -print | cut -d/ -f8 | sort -u )
+  pushd ${NVOC_MINERS}/helpers/miners
+  shipped_miners=$(find ./*/ -name .nvoc-miner.json -print | cut -d/ -f2 | sort -u )
+  popd
 else
   shipped_miners=
 fi
@@ -268,7 +270,7 @@ do
     then
       echo "Checking ${miner} version ${!vminer}"
       mkdir -p ${NVOC_MINERS}/${miner}/${!vminer}/
-      cp ${NVOC_MINERS}/helpers/miners/${miner}/${!vminer}/.nvoc-miner.json ${NVOC_MINERS}/${miner}/${!vminer}/.nvoc-miner.json
+      cp ${NVOC_MINERS}/helpers/miners/${miner}/${!vminer}/.nvoc-miner.json  ${NVOC_MINERS}/${miner}/${!vminer}/
     fi
   done
 done
@@ -278,7 +280,8 @@ do
   pluggable-installer "$pm"
 done
 
-builtin_miners="EWBF Z_EWBF DSTM ETHMINER CLAYMORE BMINER XMR_Stak cpuOPT ASccminer ANXccminer CryptoDredge KTccminer KTccminer_cryptonight KXccminer MSFTccminer NAccminer SILENTminer SPccminer SUPRminer TPccminer VERTMINER ZENEMYminer"
+# the following list will be wiped out one piece at time as soon as its pm's comversion proves stable
+builtin_miners="EWBF Z_EWBF DSTM CLAYMORE BMINER cpuOPT ASccminer ANXccminer CryptoDredge KTccminer KXccminer MSFTccminer NAccminer SILENTminer SPccminer SUPRminer TPccminer VERTMINER ZENEMYminer"
 for miner in $builtin_miners
 do
   executable="ccminer"
